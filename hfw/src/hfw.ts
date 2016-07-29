@@ -34,7 +34,7 @@ watchr.watch({
       } else {
         //processFile(helloworld, watcherInstance.path)
         //console.log("watching the path " + watcherInstance.path + " completed")
-        usar glob para processar todos os arquivos em  watcherInstance.path
+        // usar glob para processar todos os arquivos em  watcherInstance.path
       }
     },
     change: function(changeType, filePath, fileCurrentStat, filePreviousStat) {

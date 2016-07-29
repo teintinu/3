@@ -65,6 +65,13 @@ watchr.watch({
         }
     }
 });
+registerParser({
+    name: "application-pug",
+    glob: "/app.jade",
+    parse: function (source) {
+        return null;
+    }
+});
 var minimatch = require('minimatch');
 var fs = require('fs');
 var parsers = [];
@@ -87,11 +94,4 @@ function processFile(project, path) {
         }
     });
 }
-registerParser({
-    name: "application-pug",
-    glob: "/app.jade",
-    parse: function (source) {
-        return null;
-    }
-});
 //# sourceMappingURL=boot.js.map
