@@ -1,0 +1,653 @@
+- regra básica, o servidor não deve mostrar nada
+
+
+a intensão é fazer um transformador de códigos fontes 
+  onde o fonte original só se preocupa com o negócio
+  e o fonte gerado é dependente da tecnologia
+  
+  o trabalho é feito por dois tipos de "plugins", parsers e builders
+      
+- parser (esprima, jade-pug, yaml, sql)
+    le um fonte e criar a arvore AST
+    
+- builder 
+    ler o ast e gerar um outro código fonte mais complexo  
+  
+- task
+    executam outro aplicativos no servidor como webpack, appengine server, meteor, executar os testes do galen...    
+  
+por exemplo: o código baixo pode usar o esprima como parser  
+
+original.js    
+1:  /* @Test dobro_de_2
+2:  /* @Test dobro(5) == 10
+3:  */    
+4: function dobro(x: number) {
+5:    return x * 2;
+6: }    
+
+   original.dobro_de_2.test.js
+      
+  
+  esse fonte irá gerar o AST ao final desse documento
+    
+    
+o builder h5-go_appengine-backend vai usar o AST e gerar um código mais ou menos assim
+
+ func dobro (x number) number {
+   return x * x
+ }
+ 
+o builder h5-test-go_appengine-backend vai usar o AST e gerar um código mais ou menos assim
+
+
+ func dobro (x number) number {
+   return x * x
+ }
+
+func TestServices(t *testing.T) {
+	var inst, errinst = aetest.NewInstance(nil)
+	if errinst != nil {
+		t.Fatalf("Failed to create instance: %v", errinst)
+		return
+	}
+	defer inst.Close()
+  if (dobro(2) != 4) {
+    t.Fatalf("dobro(2)=%v, mas era esperado que fosse %v em original.js:1", dobro(2), 4)
+  }       
+} 
+
+    
+o builder h5-react-material-ui vai usar o AST e gerar um código mais ou menos assim
+
+ function dobro (x)  {
+   return x * x
+ }
+ além de transformar o código o builder também gera o webpack.config.js
+ o builder pode também usar "tarefas"
+ 
+o builder h5-test-jasmine vai usar o AST e gerar um código mais ou menos assim
+
+ func dobro(x) {
+   return x * x
+ }
+
+  describre('original.js', function() {
+    it("dobro(2)==4", function() {
+      expect.equals(dobro(2)).to.be.equal(4, "em original.js:1")
+    })
+  });
+  
+  // istanbul / performance
+
+      {
+        "type": "FunctionDeclaration",
+        "start": 62,
+        "end": 103,
+        "loc": {
+          "start": {
+            "line": 4,
+            "column": 2
+          },
+          "end": {
+            "line": 6,
+            "column": 3
+          }
+        },
+        "id": {
+          "type": "Identifier",
+          "start": 71,
+          "end": 76,
+          "loc": {
+            "start": {
+              "line": 4,
+              "column": 11
+            },
+            "end": {
+              "line": 4,
+              "column": 16
+            }
+          },
+          "name": "dobro",
+          "leadingComments": null
+        },
+        "generator": false,
+        "expression": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 77,
+            "end": 78,
+            "loc": {
+              "start": {
+                "line": 4,
+                "column": 17
+              },
+              "end": {
+                "line": 4,
+                "column": 18
+              }
+            },
+            "name": "x"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 80,
+          "end": 103,
+          "loc": {
+            "start": {
+              "line": 4,
+              "column": 20
+            },
+            "end": {
+              "line": 6,
+              "column": 3
+            }
+          },
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 86,
+              "end": 99,
+              "loc": {
+                "start": {
+                  "line": 5,
+                  "column": 4
+                },
+                "end": {
+                  "line": 5,
+                  "column": 17
+                }
+              },
+              "argument": {
+                "type": "BinaryExpression",
+                "start": 93,
+                "end": 98,
+                "loc": {
+                  "start": {
+                    "line": 5,
+                    "column": 11
+                  },
+                  "end": {
+                    "line": 5,
+                    "column": 16
+                  }
+                },
+                "left": {
+                  "type": "Identifier",
+                  "start": 93,
+                  "end": 94,
+                  "loc": {
+                    "start": {
+                      "line": 5,
+                      "column": 11
+                    },
+                    "end": {
+                      "line": 5,
+                      "column": 12
+                    }
+                  },
+                  "name": "x"
+                },
+                "operator": "*",
+                "right": {
+                  "type": "NumericLiteral",
+                  "start": 97,
+                  "end": 98,
+                  "loc": {
+                    "start": {
+                      "line": 5,
+                      "column": 15
+                    },
+                    "end": {
+                      "line": 5,
+                      "column": 16
+                    }
+                  },
+                  "extra": {
+                    "rawValue": 2,
+                    "raw": "2"
+                  },
+                  "value": 2
+                }
+              }
+            }
+          ],
+          "directives": []
+        },
+        "leadingComments": [
+          {
+            "type": "CommentBlock",
+            "value": " @Test dobro(2) == 4\n  /* @Test dobro(5) == 10\n  ",
+            "start": 2,
+            "end": 55,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 2
+              },
+              "end": {
+                "line": 3,
+                "column": 4
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "directives": []
+  },
+  "comments": [
+    {
+      "type": "CommentBlock",
+      "value": " @Test dobro(2) == 4\n  /* @Test dobro(5) == 10\n  ",
+      "start": 2,
+      "end": 55,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 4
+        }
+      }
+    }
+  ],
+  "tokens": [
+    {
+      "type": "CommentBlock",
+      "value": " @Test dobro(2) == 4\n  /* @Test dobro(5) == 10\n  ",
+      "start": 2,
+      "end": 55,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 4
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "function",
+        "keyword": "function",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "value": "function",
+      "start": 62,
+      "end": 70,
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 10
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "name",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "value": "dobro",
+      "start": 71,
+      "end": 76,
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 11
+        },
+        "end": {
+          "line": 4,
+          "column": 16
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "(",
+        "beforeExpr": true,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "start": 76,
+      "end": 77,
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 16
+        },
+        "end": {
+          "line": 4,
+          "column": 17
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "name",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "value": "x",
+      "start": 77,
+      "end": 78,
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 17
+        },
+        "end": {
+          "line": 4,
+          "column": 18
+        }
+      }
+    },
+    {
+      "type": {
+        "label": ")",
+        "beforeExpr": false,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "start": 78,
+      "end": 79,
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 18
+        },
+        "end": {
+          "line": 4,
+          "column": 19
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "{",
+        "beforeExpr": true,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "start": 80,
+      "end": 81,
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 20
+        },
+        "end": {
+          "line": 4,
+          "column": 21
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "return",
+        "keyword": "return",
+        "beforeExpr": true,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null,
+        "updateContext": null
+      },
+      "value": "return",
+      "start": 86,
+      "end": 92,
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 4
+        },
+        "end": {
+          "line": 5,
+          "column": 10
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "name",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "value": "x",
+      "start": 93,
+      "end": 94,
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 11
+        },
+        "end": {
+          "line": 5,
+          "column": 12
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "*",
+        "beforeExpr": true,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": 10,
+        "updateContext": null
+      },
+      "value": "*",
+      "start": 95,
+      "end": 96,
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 13
+        },
+        "end": {
+          "line": 5,
+          "column": 14
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "num",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null,
+        "updateContext": null
+      },
+      "value": 2,
+      "start": 97,
+      "end": 98,
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 15
+        },
+        "end": {
+          "line": 5,
+          "column": 16
+        }
+      }
+    },
+    {
+      "type": {
+        "label": ";",
+        "beforeExpr": true,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null,
+        "updateContext": null
+      },
+      "start": 98,
+      "end": 99,
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 16
+        },
+        "end": {
+          "line": 5,
+          "column": 17
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "}",
+        "beforeExpr": false,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "start": 102,
+      "end": 103,
+      "loc": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 3
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "eof",
+        "beforeExpr": false,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null,
+        "updateContext": null
+      },
+      "start": 107,
+      "end": 107,
+      "loc": {
+        "start": {
+          "line": 6,
+          "column": 7
+        },
+        "end": {
+          "line": 6,
+          "column": 7
+        }
+      }
+    } 
+    
+    
+    
+exemplo de sql 
+  select * from cliente where id=1
+  {
+    'type': 'query',
+    'from': [ 
+      {
+        type: 'Identifier',
+        name: 'cliente'
+      }
+    ],
+    'filters': [
+      {
+        type: 'BinaryExpression',
+        left: {
+          type: 'identifier',
+          name: 'id'
+        },
+        right: {
+          type: 'literal',
+          value: 1
+        }        
+        operator: '='
+      }
+    ]
+  }
+  
+  o builder do mongo transformaria em 
+  return db.cliente.find({_id: 1})
+      
+  o builder do data store do appengine transformaria em 
+  	cli = &ClienteCache{data: &Cliente{}}
+	  cli.key = datastore.NewKey(contexto, ClienteEntity, 1, 0, nil)
+	  err = datastore.Get(contexto, cli.key, cli.data)
+
+            

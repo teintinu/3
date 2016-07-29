@@ -1,0 +1,17 @@
+{
+  "name": "hfw",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "glob": "^7.0.5",
+    "minimatch": "^3.0.2",
+    "pug-lexer": "^2.0.2",
+    "watchr": "^2.6.0"
+  }
+}
